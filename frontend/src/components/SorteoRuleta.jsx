@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { Dices, Hand, Car, CheckCircle } from "lucide-react";
 import { api } from "../api";
+import Button from "./Button";
+import Card from "./Card";
 
 // Componente de "Sorteo de Conductor": ruleta que alterna entre los candidatos
 // empatados y se detiene dramáticamente sobre el elegido.
@@ -83,10 +86,14 @@ export default function SorteoRuleta({ plan, onResuelto }) {
   };
 
   return (
-    <div className="rounded-xl border border-indigo-500/40 bg-indigo-950/30 p-4 animate-sorteo-glow">
+    <Card
+      variant="info"
+      className="animate-sorteo-glow rounded-xl border-indigo-500/40 bg-indigo-950/30 p-4"
+    >
       <div className="flex items-center justify-between mb-1">
         <p className="font-semibold text-indigo-200 text-sm flex items-center gap-2">
-          🎲 Sorteo de conductor
+          <Dices size={16} />
+          Sorteo de conductor
         </p>
         <span className="text-[10px] rounded-full bg-indigo-500/20 text-indigo-300 px-2 py-0.5">
           empate técnico
@@ -97,8 +104,13 @@ export default function SorteoRuleta({ plan, onResuelto }) {
         decide la suerte
       </p>
 
-      {/* Carrusel de candidatos */}
-      <div className="grid gap-2 mb-4" style={{ gridTemplateColumns: `repeat(${Math.min(candidatos.length, 3)}, minmax(0, 1fr))` }}>
+      {/* Carrusel de candidatos (estados acoplados a la animación → se queda como div) */}
+      <div
+        className="grid gap-2 mb-4"
+        style={{
+          gridTemplateColumns: `repeat(${Math.min(candidatos.length, 3)}, minmax(0, 1fr))`,
+        }}
+      >
         {candidatos.map((c, i) => {
           const activo = i === indiceActivo;
           const esGanador = ganador && c.id === ganador.id;
@@ -110,7 +122,7 @@ export default function SorteoRuleta({ plan, onResuelto }) {
                   ? "border-indigo-400 bg-indigo-500/30 scale-105 shadow-lg shadow-indigo-900/50"
                   : activo && girando
                   ? "border-violet-400 bg-violet-500/25 scale-105"
-                  : "border-slate-700 bg-slate-950/40"
+                  : "border-zinc-700 bg-zinc-950/40"
               }`}
             >
               <p
@@ -119,12 +131,12 @@ export default function SorteoRuleta({ plan, onResuelto }) {
                     ? "text-white"
                     : activo && girando
                     ? "text-violet-100"
-                    : "text-slate-300"
+                    : "text-zinc-300"
                 }`}
               >
                 {c.nombre}
               </p>
-              <p className="text-[10px] text-slate-500 mt-1">
+              <p className="text-[10px] text-zinc-500 mt-1">
                 deuda {c.deuda} · ratio {Math.round((c.ratio || 0) * 100)}%
               </p>
             </div>
@@ -135,7 +147,9 @@ export default function SorteoRuleta({ plan, onResuelto }) {
       {/* Resultado */}
       {ganador && (
         <div className="mb-3 rounded-lg bg-indigo-500/15 border border-indigo-400/40 px-3 py-2 text-center">
-          <p className="text-xs text-indigo-300/80">Le toca conducir 🚗</p>
+          <p className="text-xs text-indigo-300/80 inline-flex items-center gap-1">
+            Le toca conducir <Car size={12} />
+          </p>
           <p className="text-lg font-extrabold text-white tracking-tight">
             {ganador.nombre}
           </p>
@@ -146,13 +160,16 @@ export default function SorteoRuleta({ plan, onResuelto }) {
 
       {!ganador ? (
         <>
-          <button
+          <Button
+            variant="primary"
+            loading={girando}
+            disabled={candidatos.length < 2}
+            icon={<Dices size={16} />}
+            className="w-full"
             onClick={lanzarSorteo}
-            disabled={girando || candidatos.length < 2}
-            className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 hover:scale-[1.02] disabled:opacity-50 transition-all duration-300"
           >
-            {girando ? "Girando…" : "🎰 Lanzar sorteo"}
-          </button>
+            {girando ? "Girando…" : "Lanzar sorteo"}
+          </Button>
 
           {/* Alternativa: alguien se ofrece voluntario y se evita el azar. */}
           {!girando && (
@@ -166,9 +183,10 @@ export default function SorteoRuleta({ plan, onResuelto }) {
                     key={c.id}
                     onClick={() => postularVoluntario(c.id)}
                     disabled={!!voluntarioId}
-                    className="rounded-full border border-slate-700 bg-slate-950/50 px-3 py-1 text-xs text-slate-300 transition-all duration-300 hover:border-emerald-500/50 hover:text-emerald-200 disabled:opacity-50 active:scale-95"
+                    className="inline-flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-950/50 px-3 py-1 text-xs text-zinc-300 transition-all duration-300 hover:border-emerald-500/50 hover:text-emerald-200 disabled:opacity-50 active:scale-95"
                   >
-                    🙋 {c.nombre}
+                    <Hand size={12} />
+                    {c.nombre}
                   </button>
                 ))}
               </div>
@@ -176,14 +194,16 @@ export default function SorteoRuleta({ plan, onResuelto }) {
           )}
         </>
       ) : (
-        <button
+        <Button
+          variant="success"
+          loading={fijando}
+          icon={<CheckCircle size={16} />}
+          className="w-full"
           onClick={confirmarResultado}
-          disabled={fijando}
-          className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 py-2.5 text-sm font-semibold text-white hover:opacity-90 hover:scale-[1.02] disabled:opacity-50 transition-all duration-300"
         >
-          {fijando ? "Consolidando…" : `✓ Confirmar a ${ganador.nombre} como conductor`}
-        </button>
+          {fijando ? "Consolidando…" : `Confirmar a ${ganador.nombre} como conductor`}
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

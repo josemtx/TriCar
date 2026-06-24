@@ -1,5 +1,10 @@
 import { useState } from "react";
+import { X, Plus, Car, Footprints } from "lucide-react";
 import { api } from "../api";
+import Button from "./Button";
+import Card from "./Card";
+import Input from "./Input";
+import { stateColors, cn } from "../styles/design-system";
 
 export default function EditarGrupo({ amigos, onCerrar, onCambio }) {
   const [nombre, setNombre] = useState("");
@@ -34,79 +39,96 @@ export default function EditarGrupo({ amigos, onCerrar, onCambio }) {
     }
   };
 
+  // Pill de estado de coche (mismo patrón "tinte de estado" que los chips de
+  // CrearPlan): color de texto desde tokens, forma de píldora sin borde.
+  const cocheCls = (tiene) =>
+    cn(
+      "text-xs rounded-full px-3 py-1 font-medium transition-all duration-300 inline-flex items-center gap-1",
+      tiene
+        ? cn(stateColors.positive.text, "bg-emerald-500/15 hover:bg-emerald-500/25")
+        : cn(stateColors.neutral.text, "bg-zinc-700/40 hover:bg-zinc-700/60")
+    );
+
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 grid place-items-center bg-zinc-950/70 backdrop-blur-sm p-4"
       onClick={onCerrar}
     >
-      <div
-        className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-md"
+      <Card
+        variant="primary"
+        className="w-full max-w-md p-6 shadow-2xl bg-none bg-zinc-900/90"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white">Editar grupo</h3>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Cerrar"
+            icon={<X size={18} />}
             onClick={onCerrar}
-            className="text-slate-500 hover:text-white transition-colors text-xl leading-none"
-          >
-            ✕
-          </button>
+          />
         </div>
 
         {/* Añadir nuevo amigo */}
         <form onSubmit={añadir} className="space-y-3 mb-5">
-          <input
+          <Input
             type="text"
+            aria-label="Nombre del nuevo amigo"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Nombre del nuevo amigo"
-            className="w-full rounded-lg border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/60"
           />
-          <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={poseeCoche}
-              onChange={(e) => setPoseeCoche(e.target.checked)}
-              className="accent-indigo-500"
-            />
-            Posee coche
-          </label>
-          <button
+          <Input
+            type="checkbox"
+            label="Posee coche"
+            checked={poseeCoche}
+            onChange={(e) => setPoseeCoche(e.target.checked)}
+          />
+          <Button
             type="submit"
-            disabled={guardando || !nombre.trim()}
-            className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 py-2 text-sm font-semibold text-white hover:opacity-90 hover:scale-[1.02] disabled:opacity-40 transition-all duration-300"
+            variant="primary"
+            loading={guardando}
+            disabled={!nombre.trim()}
+            icon={<Plus size={16} />}
+            className="w-full py-2"
           >
-            {guardando ? "Añadiendo…" : "+ Añadir amigo"}
-          </button>
+            {guardando ? "Añadiendo…" : "Añadir amigo"}
+          </Button>
         </form>
 
         {error && <p className="text-sm text-red-400 mb-3">{error}</p>}
 
         {/* Listado editable */}
-        <p className="text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">
+        <p className="text-xs font-medium text-zinc-500 mb-2 uppercase tracking-wider">
           Disponibilidad de coche
         </p>
         <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
           {amigos.map((a) => (
             <div
               key={a.id}
-              className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2"
+              className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950/40 px-3 py-2"
             >
-              <span className="text-sm text-slate-200">{a.nombre}</span>
+              <span className="text-sm text-zinc-200">{a.nombre}</span>
               <button
                 onClick={() => toggleCoche(a)}
-                className={`text-xs rounded-full px-3 py-1 font-medium transition-all duration-300 ${
-                  a.poseeCoche
-                    ? "bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
-                    : "bg-slate-700/40 text-slate-400 hover:bg-slate-700/60"
-                }`}
+                aria-label={a.poseeCoche ? "Quitar coche" : "Marcar con coche"}
+                className={cocheCls(a.poseeCoche)}
               >
-                {a.poseeCoche ? "🚗 Con coche" : "🚶 Sin coche"}
+                {a.poseeCoche ? (
+                  <>
+                    <Car size={12} /> Con coche
+                  </>
+                ) : (
+                  <>
+                    <Footprints size={12} /> Sin coche
+                  </>
+                )}
               </button>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

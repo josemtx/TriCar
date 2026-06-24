@@ -10,20 +10,11 @@ html,
 body,
 #root {
   min-height: 100%;
-  background-color: #020617; /* slate-950: evita flash blanco al cargar */
+  background-color: #000000; /* negro puro: evita flash blanco al cargar */
+  /* NO fijamos font-family aquí: la jerarquía (Inter primero) la aplica
+     `@tailwind base` desde tailwind.config.js sobre el elemento <html>. */
 }
 
-/* Animación de giro de la ruleta de sorteo */
-@keyframes sorteo-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 28px 6px rgba(129, 140, 248, 0.65);
-  }
-}
-
-.animate-sorteo-glow {
-  animation: sorteo-glow 1.2s ease-in-out infinite;
-}
+/* NOTA: la animación `sorteo-glow` y la utilidad `animate-sorteo-glow` ahora
+   las genera Tailwind desde tailwind.config.js (theme.extend.keyframes /
+   animation). No las redefinimos aquí para evitar pisar la directiva. */

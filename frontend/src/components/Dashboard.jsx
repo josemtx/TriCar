@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { BarChart3, Settings } from "lucide-react";
 import { ZONAS } from "../api";
 import EditarGrupo from "./EditarGrupo";
+import Button from "./Button";
+import Card from "./Card";
+import { effects } from "../styles/design-system";
 
 const pct = (ratio) => `${Math.round((ratio || 0) * 100)}%`;
 
@@ -10,7 +14,7 @@ const ratioColor = (ratio) =>
     ? "text-emerald-400"
     : ratio > 0
     ? "text-amber-400"
-    : "text-slate-500";
+    : "text-zinc-500";
 
 function ZonaBadges({ valores, color }) {
   return (
@@ -33,61 +37,62 @@ export default function Dashboard({ amigos, loading, onCambioGrupo }) {
   const [editando, setEditando] = useState(false);
 
   return (
-    <section className="rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-900 to-slate-900/60 p-5 shadow-lg shadow-black/20 backdrop-blur-md">
+    <Card variant="primary">
+      {/* Cabecera: título + acción (layout propio, por eso no uso la prop title) */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            📊 Panel de control
+            <BarChart3 size={20} className="text-indigo-400" />
+            Panel de control
           </h2>
-          <p className="text-xs text-slate-500">Ranking de equidad del grupo</p>
+          <p className="text-xs text-zinc-500">Ranking de equidad del grupo</p>
         </div>
-        <button
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<Settings size={14} />}
           onClick={() => setEditando(true)}
-          className="text-xs rounded-lg border border-slate-700 bg-slate-950/40 px-3 py-1.5 text-slate-400 hover:text-white hover:border-indigo-500/60 transition-all duration-300"
         >
-          ⚙ Editar grupo
-        </button>
+          Editar grupo
+        </Button>
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Cargando amigos…</p>}
+      {loading && <p className="text-sm text-zinc-500">Cargando amigos…</p>}
 
       <div className="space-y-3">
         {amigos.map((a) => (
-          <div
-            key={a.id}
-            className="rounded-xl border border-slate-800 bg-slate-950/40 p-3 transition-all duration-300 hover:border-slate-700 hover:scale-[1.02]"
-          >
+          <Card key={a.id} className={effects.scaleHover}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-slate-100">{a.nombre}</span>
+                <span className="font-semibold text-zinc-100">{a.nombre}</span>
                 {!a.poseeCoche && (
-                  <span className="text-[10px] rounded-full bg-slate-800 text-slate-400 px-2 py-0.5">
+                  <span className="text-[10px] rounded-full bg-zinc-800 text-zinc-400 px-2 py-0.5">
                     sin coche
                   </span>
                 )}
               </div>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-zinc-500">
                 {a.totalConducidos} conducidos
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <p className="text-slate-500 mb-1">Conducidos</p>
+                <p className="text-zinc-500 mb-1">Conducidos</p>
                 <ZonaBadges
                   valores={a.viajesConducidos}
                   color="bg-emerald-500/10 text-emerald-300"
                 />
               </div>
               <div>
-                <p className="text-slate-500 mb-1">Asistidos</p>
+                <p className="text-zinc-500 mb-1">Asistidos</p>
                 <ZonaBadges
                   valores={a.viajesAsistidos}
                   color="bg-sky-500/10 text-sky-300"
                 />
               </div>
               <div>
-                <p className="text-slate-500 mb-1">Deudas</p>
+                <p className="text-zinc-500 mb-1">Deudas</p>
                 <ZonaBadges
                   valores={a.deudaViajes}
                   color="bg-amber-500/10 text-amber-300"
@@ -95,7 +100,7 @@ export default function Dashboard({ amigos, loading, onCambioGrupo }) {
               </div>
             </div>
 
-            <div className="mt-2 flex gap-3 text-[11px] text-slate-500">
+            <div className="mt-2 flex gap-3 text-[11px] text-zinc-500">
               {ZONAS.map((z) => (
                 <span key={z}>
                   {z}:{" "}
@@ -105,7 +110,7 @@ export default function Dashboard({ amigos, loading, onCambioGrupo }) {
                 </span>
               ))}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
@@ -116,6 +121,6 @@ export default function Dashboard({ amigos, loading, onCambioGrupo }) {
           onCambio={onCambioGrupo}
         />
       )}
-    </section>
+    </Card>
   );
 }

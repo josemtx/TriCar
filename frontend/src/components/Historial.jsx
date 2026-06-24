@@ -1,6 +1,10 @@
 import { useState } from "react";
+import { History, CheckCircle, Car } from "lucide-react";
 import { api } from "../api";
 import SorteoRuleta from "./SorteoRuleta";
+import Button from "./Button";
+import Card from "./Card";
+import { stateColors, cn } from "../styles/design-system";
 
 function PlanConfirmable({ plan, amigos, onConfirmado }) {
   // Por defecto, los conductores reales = los propuestos (editables para pactos).
@@ -29,13 +33,13 @@ function PlanConfirmable({ plan, amigos, onConfirmado }) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3 transition-all duration-300 hover:border-slate-700">
+    <Card>
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="font-semibold text-slate-100 text-sm">
+          <p className="font-semibold text-zinc-100 text-sm">
             {plan.descripcion || "(sin descripción)"}
           </p>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-zinc-500">
             {plan.zona} · {plan.cochesNecesarios} coche(s) ·{" "}
             {plan.pasajeros.length} pasajeros
           </p>
@@ -45,27 +49,30 @@ function PlanConfirmable({ plan, amigos, onConfirmado }) {
         </span>
       </div>
 
-      <p className="text-[11px] text-slate-500 mb-2">
+      <p className="text-[11px] text-zinc-500 mb-2">
         Propuestos:{" "}
         <span className="text-emerald-300">
           {plan.conductoresPropuestos.map(nombre).join(", ") || "—"}
         </span>
       </p>
 
-      <p className="text-xs font-medium text-slate-400 mb-1">
+      <p className="text-xs font-medium text-zinc-400 mb-1">
         Conductores reales:
       </p>
       <div className="grid grid-cols-2 gap-1.5 mb-3">
         {candidatos.map((a) => {
           const sel = reales.includes(a.id);
+          const estado = sel ? stateColors.positive : stateColors.neutral;
           return (
             <label
               key={a.id}
-              className={`flex items-center gap-2 rounded-lg border px-2 py-1 text-sm cursor-pointer transition-all duration-200 ${
-                sel
-                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-200"
-                  : "border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-700"
-              }`}
+              className={cn(
+                "flex items-center gap-2 rounded-lg border px-2 py-1 text-sm cursor-pointer transition-all duration-200",
+                estado.background,
+                estado.border,
+                estado.text,
+                !sel && "hover:border-zinc-700"
+              )}
             >
               <input
                 type="checkbox"
@@ -81,14 +88,16 @@ function PlanConfirmable({ plan, amigos, onConfirmado }) {
 
       {error && <p className="text-sm text-red-400 mb-2">{error}</p>}
 
-      <button
+      <Button
+        variant="success"
+        loading={confirmando}
+        icon={<CheckCircle size={16} />}
+        className="w-full"
         onClick={handleConfirmar}
-        disabled={confirmando}
-        className="w-full rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 py-2 text-sm font-semibold text-white hover:opacity-90 hover:scale-[1.02] disabled:opacity-50 transition-all duration-300"
       >
-        {confirmando ? "Confirmando…" : "✓ Confirmar y cerrar viaje"}
-      </button>
-    </div>
+        {confirmando ? "Confirmando…" : "Confirmar y cerrar viaje"}
+      </Button>
+    </Card>
   );
 }
 
@@ -99,22 +108,23 @@ function ViajePasado({ plan, amigos }) {
     month: "short",
   });
   return (
-    <div className="rounded-xl border border-slate-800/80 bg-slate-950/40 p-3">
+    <Card>
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-200">
+        <p className="text-sm font-medium text-zinc-200">
           {plan.descripcion || "(sin descripción)"}
         </p>
-        <span className="text-[10px] text-slate-500">{fecha}</span>
+        <span className="text-[10px] text-zinc-500">{fecha}</span>
       </div>
       <div className="mt-1 flex items-center justify-between text-[11px]">
-        <span className="text-slate-500">
+        <span className="text-zinc-500">
           {plan.zona} · {plan.pasajeros.length} pasajeros
         </span>
-        <span className="text-emerald-300">
-          🚗 {plan.conductoresReales.map(nombre).join(", ") || "—"}
+        <span className="text-emerald-300 inline-flex items-center gap-1">
+          <Car size={12} />
+          {plan.conductoresReales.map(nombre).join(", ") || "—"}
         </span>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -133,18 +143,19 @@ export default function Historial({ planes, amigos, loading, onCambio }) {
     pasados.length === 0;
 
   return (
-    <section className="rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-900 to-slate-900/60 p-5 shadow-lg shadow-black/20 backdrop-blur-md">
+    <Card variant="primary">
       <h2 className="text-lg font-bold text-white flex items-center gap-2">
-        📜 Historial y pendientes
+        <History size={20} className="text-indigo-400" />
+        Historial y pendientes
       </h2>
-      <p className="text-xs text-slate-500 mb-4">
+      <p className="text-xs text-zinc-500 mb-4">
         Resuelve sorteos, confirma viajes y consulta los pasados
       </p>
 
-      {loading && <p className="text-sm text-slate-500">Cargando planes…</p>}
+      {loading && <p className="text-sm text-zinc-500">Cargando planes…</p>}
 
       {vacio && (
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-zinc-500">
           No hay viajes pendientes. Crea un plan para empezar.
         </p>
       )}
@@ -170,7 +181,7 @@ export default function Historial({ planes, amigos, loading, onCambio }) {
 
       {pasados.length > 0 && (
         <div className="mt-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
             Viajes pasados
           </p>
           <div className="space-y-2">
@@ -180,6 +191,6 @@ export default function Historial({ planes, amigos, loading, onCambio }) {
           </div>
         </div>
       )}
-    </section>
+    </Card>
   );
 }
