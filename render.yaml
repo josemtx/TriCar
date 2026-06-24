@@ -1,0 +1,46 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Blueprint de Render para CocheCompartido (despliegue gratuito).
+# Crea dos servicios a la vez: API (Node) + SPA (Static Site).
+#
+# Cómo usarlo:
+#   1. Sube el repo a GitHub.
+#   2. En Render: New → Blueprint → conecta el repo (detecta este render.yaml).
+#   3. Cuando lo pida, pega tu MONGODB_URI (cadena de MongoDB Atlas).
+# ──────────────────────────────────────────────────────────────────────────
+services:
+  # ── 1) API backend (Web Service Node) ────────────────────────────────────
+  - type: web
+    name: cochecompartido-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    # Render comprueba que el servicio esté vivo en esta ruta.
+    healthCheckPath: /api/health
+    envVars:
+      # Render inyecta PORT automáticamente; el backend usa process.env.PORT.
+      - key: NODE_ENV
+        value: production
+      # Secreto: se introduce en el panel de Render al desplegar (no se versiona).
+      - key: MONGODB_URI
+        sync: false
+
+  # ── 2) Frontend (Static Site) ────────────────────────────────────────────
+  - type: web
+    name: cochecompartido-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    # Reescritura SPA: cualquier ruta sirve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # URL pública del backend de arriba + /api (se inyecta en el build de Vite).
+      # Render genera https://<nombre-del-servicio>.onrender.com
+      # Si cambias el 'name' del backend, actualiza también esta URL.
+      - key: VITE_API_URL
+        value: https://cochecompartido-backend.onrender.com/api
