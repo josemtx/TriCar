@@ -27,14 +27,17 @@ const asegurarDNSResoluble = () => {
 export const contadorPorZona = () =>
   ZONAS.reduce((acc, zona) => ({ ...acc, [zona]: 0 }), {});
 
-// Datos semilla del grupo (solo se insertan si la colección está vacía).
+// Datos semilla del grupo real (solo se insertan si la colección está vacía).
 const SEMILLA_AMIGOS = [
-  { nombre: "Ana", poseeCoche: true },
-  { nombre: "Bruno", poseeCoche: true },
-  { nombre: "Carla", poseeCoche: true },
-  { nombre: "Diego", poseeCoche: true },
-  // Elena no tiene coche: nunca debe ser propuesta como conductora.
-  { nombre: "Elena", poseeCoche: false },
+  { nombre: "Alvaro", poseeCoche: true },
+  { nombre: "Cyn", poseeCoche: true },
+  { nombre: "Lucia", poseeCoche: true },
+  { nombre: "Isa", poseeCoche: true },
+  { nombre: "Mataix", poseeCoche: true }, // administrador / usuario principal
+  { nombre: "Gema", poseeCoche: true },
+  { nombre: "Emmi", poseeCoche: true },
+  { nombre: "Adrito", poseeCoche: true },
+  { nombre: "Isidro", poseeCoche: true },
 ];
 
 // Inserta la semilla si no hay ningún amigo todavía.
