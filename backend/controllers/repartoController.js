@@ -26,7 +26,11 @@ const cargarAmigosMap = async (ids) => {
 // ──────────────────────────────────────────────────────────────────────────
 // ALGORITMO DE SUGERENCIA AUTOMÁTICA
 // Devuelve { confirmados, empatados, slotsRestantes, requiereSorteo }.
-// Si en el corte hay un empate técnico ABSOLUTO (misma deuda, ratio y total)
+// Orden de prioridades votado por el grupo (encuesta P1):
+//   P1: MAYOR deuda en la zona            (y.deuda - x.deuda)
+//   P2: MENOS viajes conducidos TOTALES   (x.total - y.total)  ← "conteo plano"
+//   P3: MENOR ratio en la zona            (x.ratio - y.ratio)  ← desempate final
+// Si en el corte hay un empate técnico ABSOLUTO (misma deuda, total y ratio)
 // que no cabe en los slots restantes, NO elige al azar: marca requiereSorteo.
 // ──────────────────────────────────────────────────────────────────────────
 export const calcularCandidatos = async (plan) => {
@@ -60,14 +64,19 @@ export const calcularCandidatos = async (plan) => {
     return m;
   });
 
+  console.log(
+    "   Orden de prioridades (voto del grupo): P1 deuda↓ · P2 totalConducidos↑ (conteo plano) · P3 ratio↑"
+  );
+
   // Ordenación por prioridades (SIN azar: el azar se delega al sorteo visual):
   conMetricas.sort((x, y) => {
-    if (y.deuda !== x.deuda) return y.deuda - x.deuda; // P1: mayor deuda
-    if (x.ratio !== y.ratio) return x.ratio - y.ratio; // P2: menor ratio
-    return x.total - y.total; // P3: menos conducidos totales
+    if (y.deuda !== x.deuda) return y.deuda - x.deuda; // P1: mayor deuda en la zona
+    if (x.total !== y.total) return x.total - y.total; // P2: menos conducidos TOTALES (conteo plano)
+    return x.ratio - y.ratio; // P3: menor ratio en la zona (desempate final)
   });
 
-  const clave = (m) => `${m.deuda}|${m.ratio}|${m.total}`;
+  // Empate técnico ABSOLUTO = misma deuda, total y ratio (mismo orden que P1/P2/P3).
+  const clave = (m) => `${m.deuda}|${m.total}|${m.ratio}`;
 
   const confirmados = [];
   let empatados = [];
@@ -356,12 +365,13 @@ export const cerrarYConfirmarPlan = async (req, res) => {
     return res.status(409).json({ error: "El plan ya estaba confirmado" });
   }
 
-  const { conductoresReales } = req.body;
+  const { conductoresReales, viajeSoloJustificado } = req.body;
   if (!Array.isArray(conductoresReales)) {
     return res
       .status(400)
       .json({ error: "'conductoresReales' debe ser un array de amigoId" });
   }
+  const soloJustificado = viajeSoloJustificado === true;
 
   const { zona } = plan;
 
@@ -394,6 +404,12 @@ export const cerrarYConfirmarPlan = async (req, res) => {
     }
   }
 
+  // "Viaje en solitario": el conductor fue solo, sin copilotos (único asistente).
+  // Por voto del grupo, un viaje solo cuenta como conducido si va con pasajeros
+  // normales o, yendo solo, si está justificado (fuerza mayor: trabajo/estudios).
+  const viajeEnSolitario = plan.pasajeros.length <= 1;
+  const cuentaComoConducido = !viajeEnSolitario || soloJustificado;
+
   console.log(`\n🏁 [cerrarYConfirmarPlan] Cerrando plan ${plan.id} | zona=${zona}`);
   console.log(`   Propuestos: ${propuestos.map((id) => amigosMap.get(id)?.nombre).join(", ") || "(ninguno)"}`);
   console.log(`   Reales:     ${conductoresReales.map((id) => amigosMap.get(id)?.nombre).join(", ") || "(ninguno)"}`);
@@ -412,6 +428,16 @@ export const cerrarYConfirmarPlan = async (req, res) => {
   // 2) Conductores reales -> saldan deuda (si la hay) y suman conducido.
   for (const id of conductoresReales) {
     const a = amigosMap.get(id);
+
+    // Viaje en solitario por gusto (no justificado): NO ayuda al grupo, así que
+    // ni suma conducido ni salda deuda (la deuda queda congelada).
+    if (!cuentaComoConducido) {
+      console.log(
+        `⚠️  [cerrarYConfirmarPlan] Conductor fue solo por gusto: NO suma conducidos y NO salda deuda (${a.nombre})`
+      );
+      continue;
+    }
+
     if (a.deudaViajes[zona] > 0) {
       a.deudaViajes[zona] -= 1;
       a.markModified("deudaViajes");
@@ -435,6 +461,7 @@ export const cerrarYConfirmarPlan = async (req, res) => {
   await Promise.all([...amigosMap.values()].map((a) => a.save()));
 
   plan.conductoresReales = conductoresReales;
+  plan.viajeSoloJustificado = soloJustificado;
   plan.estado = "confirmado_post_viaje";
   await plan.save();
 
