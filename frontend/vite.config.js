@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'icon.svg'],
       manifest: {
         name: 'CocheCompartido',
         short_name: 'TriCar',
@@ -21,13 +21,13 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/favicon.svg',
+            src: 'icon.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any',
           },
           {
-            src: '/favicon.svg',
+            src: 'icon.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any maskable',

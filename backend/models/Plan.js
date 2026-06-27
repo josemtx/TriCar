@@ -22,6 +22,8 @@ const planSchema = new Schema(
     conductoresReales: { type: [String], default: [] },
     // Marca si un viaje en solitario fue por fuerza mayor (cuenta como conducido).
     viajeSoloJustificado: { type: Boolean, default: false },
+    // Explicación en lenguaje natural del porqué de la propuesta de conductores.
+    motivoExplicacion: { type: String, default: "" },
     sorteoPendiente: { type: sorteoPendienteSchema, default: null },
     estado: {
       type: String,

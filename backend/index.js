@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import apiRouter from "./routes/api.js";
+import devRouter from "./routes/dev.js";
 import { conectarDB } from "./data/store.js";
 
 dotenv.config();
@@ -15,6 +16,9 @@ app.use(express.json());
 
 // Rutas de la API (incluye /api/health)
 app.use("/api", apiRouter);
+
+// Rutas de desarrollo/mantenimiento (bloqueadas en producción).
+app.use("/api/dev", devRouter);
 
 // Manejador de errores: responde JSON limpio ante fallos (CastError, etc.).
 app.use((err, req, res, _next) => {

@@ -16,6 +16,36 @@ const ratioConduccion = (amigo, zona) => {
 const totalConducidos = (amigo) =>
   ZONAS.reduce((sum, z) => sum + (amigo.viajesConducidos[z] || 0), 0);
 
+// Explicaciones en lenguaje natural según el criterio que decidió la propuesta.
+const MOTIVOS = {
+  deuda:
+    "📌 Propuesto(s) de forma directa por tener la mayor deuda acumulada viajando a esta zona.",
+  total:
+    "⚖️ Empate en deuda de zona resuelto: Seleccionado por llevar menos viajes totales conducidos en la app a nivel global.",
+  ratio:
+    "📊 Empate máximo resuelto por consumo: Seleccionado por haber ido más veces de copiloto en proporción a los viajes en esta zona.",
+  sorteo:
+    "🚨 Empate técnico absoluto en deudas, totales y ratio. Se requiere sorteo en la ruleta.",
+};
+
+// Determina qué criterio (deuda / total / ratio / sorteo) explica la propuesta.
+// `conMetricas` debe venir YA ordenado por P1 deuda↓, P2 total↑, P3 ratio↑.
+const determinarMotivo = (conMetricas, cochesNecesarios, requiereSorteo) => {
+  if (requiereSorteo) return MOTIVOS.sorteo;
+  if (conMetricas.length === 0) return "";
+  // P1: si el mejor candidato arrastra deuda en la zona, esa es la razón.
+  if (conMetricas[0].deuda > 0) return MOTIVOS.deuda;
+  // Sin deuda: miramos qué desempató en el corte (último elegido vs primer excluido).
+  const elegidos = conMetricas.slice(0, cochesNecesarios);
+  const excluidos = conMetricas.slice(cochesNecesarios);
+  if (excluidos.length === 0) return MOTIVOS.total; // no hubo competencia: conteo plano
+  const ult = elegidos[elegidos.length - 1];
+  const prim = excluidos[0];
+  if (ult.total !== prim.total) return MOTIVOS.total; // P2: conteo plano
+  if (ult.ratio !== prim.ratio) return MOTIVOS.ratio; // P3: ratio de zona
+  return MOTIVOS.total;
+};
+
 // Carga un conjunto de amigos por id y los devuelve en un Map { id -> doc }.
 const cargarAmigosMap = async (ids) => {
   const unicos = [...new Set(ids)];
@@ -103,6 +133,7 @@ export const calcularCandidatos = async (plan) => {
   }
 
   const requiereSorteo = empatados.length > 0;
+  const motivoExplicacion = determinarMotivo(conMetricas, cochesNecesarios, requiereSorteo);
   console.log(
     `   ✅ Confirmados: ${confirmados.map((id) => amigosMap.get(id)?.nombre).join(", ") || "(ninguno)"}`
   );
@@ -111,8 +142,9 @@ export const calcularCandidatos = async (plan) => {
       `   🎲 EMPATE: ${empatados.map((m) => m.nombre).join(" = ")} -> sorteo para ${slotsRestantes} plaza(s)`
     );
   }
+  console.log(`   💬 Motivo: ${motivoExplicacion}`);
 
-  return { confirmados, empatados, slotsRestantes, requiereSorteo };
+  return { confirmados, empatados, slotsRestantes, requiereSorteo, motivoExplicacion };
 };
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -254,10 +286,11 @@ export const getPropuestaPlan = async (req, res) => {
     return res.status(409).json({ error: "El plan ya está confirmado" });
   }
 
-  const { confirmados, empatados, slotsRestantes, requiereSorteo } =
+  const { confirmados, empatados, slotsRestantes, requiereSorteo, motivoExplicacion } =
     await calcularCandidatos(plan);
 
   plan.conductoresPropuestos = confirmados;
+  plan.motivoExplicacion = motivoExplicacion;
   if (requiereSorteo) {
     plan.estado = "en_sorteo";
     plan.sorteoPendiente = {
@@ -285,6 +318,7 @@ export const getPropuestaPlan = async (req, res) => {
     slotsRestantes,
     conductoresPropuestos: confirmados.map(detalle),
     candidatosEmpatados: empatados,
+    motivoExplicacion,
   });
 };
 

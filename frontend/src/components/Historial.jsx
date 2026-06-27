@@ -56,6 +56,12 @@ function PlanConfirmable({ plan, amigos, onConfirmado }) {
         </span>
       </p>
 
+      {plan.motivoExplicacion && (
+        <p className="mb-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[11px] leading-snug text-zinc-300">
+          {plan.motivoExplicacion}
+        </p>
+      )}
+
       <p className="text-xs font-medium text-zinc-400 mb-1">
         Conductores reales:
       </p>

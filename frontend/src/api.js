@@ -47,4 +47,6 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ conductoresReales }),
     }),
+  // Solo desarrollo: borra planes y resetea contadores a 0.
+  resetDev: () => request("/dev/reset", { method: "POST" }),
 };

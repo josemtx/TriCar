@@ -149,6 +149,11 @@ export default function CrearPlan({ amigos, onPlanCreado, irAHistorial }) {
           <p className="text-[11px] text-indigo-300/70 mt-1">
             Nadie destaca: hay que sortear o que alguien se ofrezca.
           </p>
+          {resultado.motivoExplicacion && (
+            <p className="mt-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[11px] leading-snug text-zinc-300">
+              {resultado.motivoExplicacion}
+            </p>
+          )}
           <Button
             variant="secondary"
             className="mt-2 w-full border-indigo-500/40 bg-indigo-500/10 text-indigo-200 hover:border-indigo-500/40 hover:bg-indigo-500/20 hover:text-indigo-200"
@@ -180,6 +185,11 @@ export default function CrearPlan({ amigos, onPlanCreado, irAHistorial }) {
                 </span>
               ))}
             </div>
+          )}
+          {resultado.motivoExplicacion && (
+            <p className="mt-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[11px] leading-snug text-zinc-300">
+              {resultado.motivoExplicacion}
+            </p>
           )}
         </Card>
       )}

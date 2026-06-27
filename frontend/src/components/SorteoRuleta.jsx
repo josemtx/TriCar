@@ -104,6 +104,12 @@ export default function SorteoRuleta({ plan, onResuelto }) {
         decide la suerte
       </p>
 
+      {plan.motivoExplicacion && (
+        <p className="mb-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[11px] leading-snug text-zinc-300">
+          {plan.motivoExplicacion}
+        </p>
+      )}
+
       {/* Carrusel de candidatos (estados acoplados a la animación → se queda como div) */}
       <div
         className="grid gap-2 mb-4"

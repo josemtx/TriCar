@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo negro puro -->
+  <rect width="512" height="512" fill="#000000"/>
+
+  <!-- Coche frontal minimalista: líneas blancas finas, limpio y elegante -->
+  <g fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Cuerpo / parrilla frontal -->
+    <rect x="104" y="240" width="304" height="116" rx="40"/>
+
+    <!-- Cabina y luna delantera (techo trapezoidal sobre el cuerpo) -->
+    <path d="M168 240 L200 176 Q206 164 220 164 H292 Q306 164 312 176 L344 240"/>
+    <!-- Borde superior de la luna -->
+    <path d="M196 200 H316"/>
+
+    <!-- Faros LED (líneas afiladas a cada lado) -->
+    <path d="M132 276 L182 268"/>
+    <path d="M380 276 L330 268"/>
+
+    <!-- Parrilla central -->
+    <path d="M222 314 H290"/>
+
+    <!-- Ruedas asomando bajo el cuerpo -->
+    <rect x="140" y="350" width="58" height="22" rx="11"/>
+    <rect x="314" y="350" width="58" height="22" rx="11"/>
+  </g>
+</svg>
